@@ -26,9 +26,14 @@ iamroot 16차 커널 스터디 소스 저장소입니다.
 
 1. toolchain 다운로드
 
-   저는 developer.arm.com 에서 다운 받은 toolchain 을 사용했습니다.
+QEMU 및 gdb 를 사용하기 위해 toolchain은  lianro toolchain 을 사용하여 다시 compile 진행
 
-   [gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu.tar.xz](https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu.tar.xz?revision=2e88a73f-d233-4f96-b1f4-d8b36e9bb0b9&la=en&hash=167687FADA00B73D20EED2A67D0939A197504ACD)
+Linaro_GDB-2019.02 (https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/aarch64-linux-gnu/)
+
+Kernel Version : 5.1.0
+
+QEMU Version : 4.1.0
+
 
 2. 환경설정
    
