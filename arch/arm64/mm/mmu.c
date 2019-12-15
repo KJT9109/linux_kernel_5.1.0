@@ -771,17 +771,17 @@ static inline pud_t * fixmap_pud(unsigned long addr)
 
 	BUG_ON(pgd_none(pgd) || pgd_bad(pgd));
 
-	return pud_offset_kimg(pgdp, addr);  //pgdp = 0xffff00001147b7d8 ,addr = 0xffff00001147b000
+	return pud_offset_kimg(pgdp, addr);  // pgdp = 0xffff00001147b7d8 ,addr = 0xffff00001147b000
 }
 
 static inline pmd_t * fixmap_pmd(unsigned long addr)
 {
-	pud_t *pudp = fixmap_pud(addr);
+	pud_t *pudp = fixmap_pud(addr);  // *pudp = 0xffff00001140eff8
 	pud_t pud = READ_ONCE(*pudp);
 
 	BUG_ON(pud_none(pud) || pud_bad(pud));
 
-	return pmd_offset_kimg(pudp, addr);
+	return pmd_offset_kimg(pudp, addr);  // fixmap_pud로 부터 pudp 주소를 구한다음 다시 pmd주소를 구한다.
 }
 
 static inline pte_t * fixmap_pte(unsigned long addr)
@@ -805,29 +805,33 @@ static inline pte_t * fixmap_pte(unsigned long addr)
 	unsigned long addr = FIXADDR_START;   //addr = FXADR_START = 0xffff7dfffe7f9000
 
 	pgdp = pgd_offset_k(addr);  // pgd+index(addr) = 0xffff00001147b000 + (0xfb*8byte) = 0xffff00001147b7d8
-	pgd = READ_ONCE(*pgdp);    // pgd = 0x0 
+	pgd = READ_ONCE(*pgdp);    // pgd = 0x0  READ_ONCE는 아래 pgd_none 함수에 argument 로 사용하기 위해 사용한 것으로 보인다. 
 
-	dbg_x1 = pgd_page_paddr(pgd);     // 0
-	dbg_x1 = __pa_symbol(bm_pud);     // 0x4140e000
-	dbg_x1 = __pa_symbol(bm_pmd);	  // 0x4140d000
-	dbg_x1 = __pa_symbol(bm_pte);	  // 0x4140c000
-	dbg_x1 = PMD_TYPE_TABLE;		  // 0x03 
-	dbg_x1 = PUD_TYPE_TABLE;		  // 0x03 
+	dbg_x1 = pgd_page_paddr(pgd);   // 0
+	dbg_x1 = __pa_symbol(bm_pud);   // 0x4140e000
+	dbg_x1 = __pa_symbol(bm_pmd);   // 0x4140d000
+	dbg_x1 = __pa_symbol(bm_pte);   // 0x4140c000
+	dbg_x1 = PMD_TYPE_TABLE:        // 0x03 
+	dbg_x1 = PUD_TYPE_TABLE;        // 0x03 
 	
-	__pgd_populate(pgdp, __pa_symbol(bm_pud), 0x00);   //0x4140e000
-	__pgd_populate(pgdp, __pa_symbol(bm_pud), 0x01);   //0x4140e001
+	__pgd_populate(pgdp, __pa_symbol(bm_pud), 0x00);   // *pgdp = 0x4140e000
+	__pgd_populate(pgdp, __pa_symbol(bm_pud), 0x01);   // *pgdp = 0x4140e001 따라서 마지막 argument 값은  offset을 나타낸다.
 
+	/*  이 시점에 pgd= READ_ONCE(*pgdp)를 호출 하는 순간 위에 populate로 *pgdp에 값이 들어 가있기 때문에
+	 *  pgd 는 0이 아닌 값이 들어가 있고 pgd_none(pgd)는 0 이 되므로 아래 if(pgd_none(pgd))조건을 만족하지 못하게 된다.
+ 	 */
 
 	dbg_pudp = pud_offset_kimg(pgdp, addr);         //0xffff00001140eff8
 	/*            analyze to pud_offset_kimg  in function         */
-	dbg_x2 = kimage_voffset;						//0xfffeffffd0000000
+	dbg_x2 = kimage_voffset;                        //kimage_voffset = 0xfffeffffd0000000
 	dbg_x1 = pgd_page_paddr(READ_ONCE(*(pgdp)));    //0x4140e000
-	dbg_x1 = pud_index(addr); 						//0x1ff
-	dbg_x1 = pud_offset_phys(pgdp, addr);			//0x4140 + 0x1ff(8byte) = 0x4140eff8
-	dbg_x1 = __phys_to_kimg(dbg_x1);				//kimage_voffset(0xfffeffffd0000000) + pud_offset_phys (0x4140eff8) = 0xffff00001140eff8 
+	dbg_x1 = pud_index(addr);                       //0x1ff
+	dbg_x1 = pud_offset_phys(pgdp, addr);           //0x4140 + 0x1ff(8byte) = 0x4140eff8
+	dbg_x1 = __phys_to_kimg(dbg_x1);                //kimage_voffset(0xfffeffffd0000000) + pud_offset_phys (0x4140eff8) = 0xffff00001140eff8 
 	/*  __phys_to_kimg function return is unsigned long. 
-	 *  so dbg_x1 value is 0xffff00001140eff8 -> 0x1140eff8       */
-	/*                     end to analyze                         */
+	 *  so dbg_x1 value is 0xffff00001140eff8 -> 0x1140eff8  
+	 *  실제 __phys_to_kimg는 kimage_voffset(가상주소와 물리주소의 offset) 값을 물리주소에 더하여 os에 사용할 가상 주소의 값을 구한다. 
+	 *                     end to analyze                         */
 
 	if (CONFIG_PGTABLE_LEVELS > 3 &&  // CONFIG_PGTABLE_LEVELS = 4
 	    !(pgd_none(pgd) || pgd_page_paddr(pgd) == __pa_symbol(bm_pud))) {  
@@ -837,17 +841,17 @@ static inline pte_t * fixmap_pte(unsigned long addr)
 		 * share the top level pgd entry, which should only happen on
 		 * 16k/4 levels configurations.
 		 */
-		BUG_ON(!IS_ENABLED(CONFIG_ARM64_16K_PAGES)); 
-		pudp = pud_offset_kimg(pgdp, addr); 
+		BUG_ON(!IS_ENABLED(CONFIG_ARM64_16K_PAGES));  //pgd_page_apddr 값과 bm_pud 값이 일치 하지 않으면 error 이므로 bug_on 를 실행.
+		pudp = pud_offset_kimg(pgdp, addr);           // 다시 pgd -> pud 로  mapping 한다.
 	} else {
-		if (pgd_none(pgd))      // pgd is none. so pgd_none = 0x1 
+		if (pgd_none(pgd))      // pgd is none. so pgd_none = 0x1 (original source code에는 0이지만 debug code로 인해 값이 있다 하지만 read_once 호출 한 시점에는 없으므로 상관 없다.)
 			__pgd_populate(pgdp, __pa_symbol(bm_pud), PUD_TYPE_TABLE);  //*pgdp = 0x4140e003
 		pudp = fixmap_pud(addr);	// pudp = 0xffff00001140eff8,  *pudp = 0x0
 		dbg_x1 = pud_none(READ_ONCE(*pudp));
 	}
 	if (pud_none(READ_ONCE(*pudp)))   // pudp is none. so pud_none = 0x1
 		__pud_populate(pudp, __pa_symbol(bm_pmd), PMD_TYPE_TABLE);   //*pudp = 0x4140d003
-	pmdp = fixmap_pmd(addr);    // pmdp = 0xffff00001140df98  , *pmdp = 0x0 
+	pmdp = fixmap_pmd(addr);    // pmdp = 0xffff00001140df98  , *pmdp = 0x0   fixmap_pmd를 따라가 보면  __phys_to_kimg을 return하여 가상주소를 구한다.
 	__pmd_populate(pmdp, __pa_symbol(bm_pte), PMD_TYPE_TABLE); // *pmdp = 0x4140c003
 
 	/*

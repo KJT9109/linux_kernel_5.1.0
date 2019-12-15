@@ -619,7 +619,15 @@ static inline phys_addr_t pgd_page_paddr(pgd_t pgd)   // pgd = 0xffff000011263db
 #define pud_set_fixmap_offset(pgdp, addr)	((pud_t *)pgdp)
 #define pud_clear_fixmap()
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 #define pud_offset_kimg(dir,addr)	((pud_t *)dir)   //(pgdp, addr);   d
+=======
+#define pud_offset_kimg(dir,addr)	((pud_t *)dir)   //(pgdp, addr);   
+>>>>>>> Stashed changes
+=======
+#define pud_offset_kimg(dir,addr)	((pud_t *)dir)   //(pgdp, addr);   
+>>>>>>> Stashed changes
 
 #endif  /* CONFIG_PGTABLE_LEVELS > 3 */
 
