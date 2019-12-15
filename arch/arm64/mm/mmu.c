@@ -811,7 +811,7 @@ static inline pte_t * fixmap_pte(unsigned long addr)
 	dbg_x1 = __pa_symbol(bm_pud);   // 0x4140e000
 	dbg_x1 = __pa_symbol(bm_pmd);   // 0x4140d000
 	dbg_x1 = __pa_symbol(bm_pte);   // 0x4140c000
-	dbg_x1 = PMD_TYPE_TABLE:        // 0x03 
+	dbg_x1 = PMD_TYPE_TABLE;        // 0x03 
 	dbg_x1 = PUD_TYPE_TABLE;        // 0x03 
 	
 	__pgd_populate(pgdp, __pa_symbol(bm_pud), 0x00);   // *pgdp = 0x4140e000
