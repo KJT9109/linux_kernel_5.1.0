@@ -75,13 +75,29 @@ static unsigned long slot_virt[FIX_BTMAPS_SLOTS] __initdata;
 __attribute__((optimize("-O0"))) void __init early_ioremap_setup(void)
 {
 	int i;
+	int dbg_x1;
 
-	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
-		if (WARN_ON(prev_map[i]))
+	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)        // FIX_BITMAPS_SLOTS = 7 (0~6)
+		if (WARN_ON(prev_map[i]))                   // prev_map[0~6]에 데이터가 있는 경우 경고 출력
 			break;
 
-	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
-		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
+	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)        // SLOT 수만큼 돌며 slot_virt 배열에 fixmap의 BTMAP 가상 주소를 설정한다.
+		{
+			dbg_x1 = NR_FIX_BTMAPS*i;
+			slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
+		  
+		}
+     /*  __fix_to_virt = (FIXADDR_TOP - ((x) << PAGE_SHIFT)) */
+
+     /*  for문을 빠져 나온 후 slot_virt 값은 아래와 같다 
+		  *  
+		  *   slot_virt = {0xffff7dfffe63a000, 0xffff7dfffe67a000, 
+			*                0xffff7dfffe6ba000, 0xffff7dfffe6fa000, 
+			*                0xffff7dfffe73a000, 0xffff7dfffe77a000, 
+			*								 0xffff7dfffe7ba000}
+			* 
+			*/
+
 }
 
 static int __init check_early_ioremap_leak(void)
