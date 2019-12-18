@@ -804,8 +804,8 @@ static inline pte_t * fixmap_pte(unsigned long addr)
 	u64 dbg_x2;
 	unsigned long addr = FIXADDR_START;   //addr = FXADR_START = 0xffff7dfffe7f9000
 
-	pgdp = pgd_offset_k(addr);  // pgd+index(addr) = 0xffff00001147b000 + (0xfb*8byte) = 0xffff00001147b7d8
-	pgd = READ_ONCE(*pgdp);    // pgd = 0x0  READ_ONCE는 아래 pgd_none 함수에 argument 로 사용하기 위해 사용한 것으로 보인다. 
+	pgdp = pgd_offset_k(addr);  // init_pg_dir + index(addr) = 0xffff00001147b000 + (0xfb*8byte) = 0xffff00001147b7d8
+	pgd = READ_ONCE(*pgdp);    // pgd = 0x0
 
 	dbg_x1 = pgd_page_paddr(pgd);   // 0
 	dbg_x1 = __pa_symbol(bm_pud);   // 0x4140e000
@@ -815,7 +815,12 @@ static inline pte_t * fixmap_pte(unsigned long addr)
 	dbg_x1 = PUD_TYPE_TABLE;        // 0x03 
 	
 	__pgd_populate(pgdp, __pa_symbol(bm_pud), 0x00);   // *pgdp = 0x4140e000
-	__pgd_populate(pgdp, __pa_symbol(bm_pud), 0x01);   // *pgdp = 0x4140e001 따라서 마지막 argument 값은  offset을 나타낸다.
+	__pgd_populate(pgdp, __pa_symbol(bm_pud), 0x01);   // *pgdp = 0x4140e001 
+  
+	/* __pgd_populate 후 *pgdp 값은 전부 물리주소가 아닌 디스크립터로 사용 된다. 
+	 * http://jake.dothome.co.kr/pt64/ 링크에 디스크립터 포맷을 참고 하면 마지막 0x03 을 or 연산 하는지 확인 가능
+	 */
+
 
 	/*  이 시점에 pgd= READ_ONCE(*pgdp)를 호출 하는 순간 위에 populate로 *pgdp에 값이 들어 가있기 때문에
 	 *  pgd 는 0이 아닌 값이 들어가 있고 pgd_none(pgd)는 0 이 되므로 아래 if(pgd_none(pgd))조건을 만족하지 못하게 된다.
@@ -828,6 +833,7 @@ static inline pte_t * fixmap_pte(unsigned long addr)
 	dbg_x1 = pud_index(addr);                       //0x1ff
 	dbg_x1 = pud_offset_phys(pgdp, addr);           //0x4140 + 0x1ff(8byte) = 0x4140eff8
 	dbg_x1 = __phys_to_kimg(dbg_x1);                //kimage_voffset(0xfffeffffd0000000) + pud_offset_phys (0x4140eff8) = 0xffff00001140eff8 
+	
 	/*  __phys_to_kimg function return is unsigned long. 
 	 *  so dbg_x1 value is 0xffff00001140eff8 -> 0x1140eff8  
 	 *  실제 __phys_to_kimg는 kimage_voffset(가상주소와 물리주소의 offset) 값을 물리주소에 더하여 os에 사용할 가상 주소의 값을 구한다. 
