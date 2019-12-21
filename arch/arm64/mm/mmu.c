@@ -802,7 +802,7 @@ static inline pte_t * fixmap_pte(unsigned long addr)
 	pmd_t *pmdp;
 	unsigned int dbg_x1;
 	u64 dbg_x2;
-	unsigned long addr = FIXADDR_START;   //addr = FXADR_START = 0xffff7dfffe7f9000
+	unsigned long addr = FIXADDR_START;   //addr = FIXADDR_START = 0xffff7dfffe7f9000
 
 	pgdp = pgd_offset_k(addr);  // init_pg_dir + index(addr) = 0xffff00001147b000 + (0xfb*8byte) = 0xffff00001147b7d8
 	pgd = READ_ONCE(*pgdp);    // pgd = 0x0
