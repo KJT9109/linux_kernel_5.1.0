@@ -91,7 +91,7 @@ __attribute__((optimize("-O0"))) void __init early_ioremap_setup(void)
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)        // SLOT 수만큼 돌며 slot_virt 배열에 fixmap의 BTMAP 가상 주소를 설정한다.
 		{
 			dbg_x2 = NR_FIX_BTMAPS*i;
-		  dbg_x3 = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i; 
+			dbg_x3 = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i; 
 			slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
 		}	
 			/*   __fix_to_virt = (FIXADDR_TOP - ((x) << PAGE_SHIFT))
