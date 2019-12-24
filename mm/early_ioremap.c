@@ -78,44 +78,36 @@ __attribute__((optimize("-O0"))) void __init early_ioremap_setup(void)
 	u64 dbg_x1,dbg_x2,dbg_x3;
 
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)        // FIX_BITMAPS_SLOTS = 7 (0~6)
-		if (WARN_ON(prev_map[i]))                   // prev_map[0~6]에 데이터가 있는 경우 경고 출력
+		if (WARN_ON(prev_map[i]))                 // prev_map[0~6]에 데이터가 있는 경우 경고 출력
 			break;
 
 
-      dbg_x1 = FIX_BTMAP_BEGIN;                 // 0x5c6
-      dbg_x1 = FIX_BTMAP_END;                   // 0x407
-			dbg_x1 = TOTAL_FIX_BTMAPS;                // 0x1c0
-	    dbg_x1 = FIXADDR_TOP;                     // 0xffff7dfffec00000
-			dbg_x1 =  PAGE_SHIFT;                     // 0xc
-	
+		dbg_x1 = FIX_BTMAP_BEGIN;                 // 0x5c6
+		dbg_x1 = FIX_BTMAP_END;                   // 0x407
+		dbg_x1 = TOTAL_FIX_BTMAPS;                // 0x1c0
+		dbg_x1 = FIXADDR_TOP;                     // 0xffff7dfffec00000
+		dbg_x1 =  PAGE_SHIFT;                     // 0xc
+		
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)        // SLOT 수만큼 돌며 slot_virt 배열에 fixmap의 BTMAP 가상 주소를 설정한다.
 		{
 			dbg_x2 = NR_FIX_BTMAPS*i;
 			dbg_x3 = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i; 
 			slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
 		}	
-			/*   __fix_to_virt = (FIXADDR_TOP - ((x) << PAGE_SHIFT))
-			 *   __fix_to_virt = (0xffff7dfffec00000-( x << 12 ))
-			 *   __fix_to_virt[0] = 0xffff7dfffec00000 - (5c6 << 12) 
-			 *   __fix_to_virt[1] = 0xffff7dfffec00000 - (586 << 12)
-			 *   __fix_to_virt[2] = 0xffff7dfffec00000 - (546 << 12)
-			 *   __fix_to_virt[3] = 0xffff7dfffec00000 - (506 << 12)
-			 *   __fix_to_virt[4] = 0xffff7dfffec00000 - (4c6 << 12)
-			 *   __fix_to_virt[5] = 0xffff7dfffec00000 - (486 << 12)
-			 *   __fix_to_virt[6] = 0xffff7dfffec00000 - (446 << 12)
-			 * 
-		   */
+	 	/*   __fix_to_virt = (FIXADDR_TOP - ((x) << PAGE_SHIFT))  
+		*   __fix_to_virt = (0xffff7dfffec00000-( x << 12 ))
+		*   __fix_to_virt[0] = 0xffff7dfffec00000 - (5c6 << 12) = 0xffff7dfffe63a000
+		*   __fix_to_virt[1] = 0xffff7dfffec00000 - (586 << 12) = 0xffff7dfffe67a000
+		*   __fix_to_virt[2] = 0xffff7dfffec00000 - (546 << 12) = 0xffff7dfffe6ba000
+		*   __fix_to_virt[3] = 0xffff7dfffec00000 - (506 << 12) = 0xffff7dfffe6fa000
+		*   __fix_to_virt[4] = 0xffff7dfffec00000 - (4c6 << 12) = 0xffff7dfffe73a000
+		*   __fix_to_virt[5] = 0xffff7dfffec00000 - (486 << 12) = 0xffff7dfffe77a000
+		*   __fix_to_virt[6] = 0xffff7dfffec00000 - (446 << 12) = 0xffff7dfffe7ba000
+		* 
+		*/
 		
        
-     /* 
-			*   for문을 빠져 나온 후 slot_virt 값은 아래와 같다 
-		  *  
-		  *   slot_virt = {0xffff7dfffe63a000, 0xffff7dfffe67a000, 
-			*                0xffff7dfffe6ba000, 0xffff7dfffe6fa000, 
-			*                0xffff7dfffe73a000, 0xffff7dfffe77a000, 
-			*								 0xffff7dfffe7ba000}
-			* 
-			*/
+     
 
 }
 
