@@ -22,7 +22,7 @@
 #include <asm/cmpxchg.h>
 #include <asm/stack_pointer.h>
 
-static inline void set_my_cpu_offset(unsigned long off)
+ static inline void set_my_cpu_offset(unsigned long off)
 {
 	asm volatile(ALTERNATIVE("msr tpidr_el1, %0",
 				 "msr tpidr_el2, %0",
@@ -30,7 +30,7 @@ static inline void set_my_cpu_offset(unsigned long off)
 			:: "r" (off) : "memory");
 }
 
-static inline unsigned long __my_cpu_offset(void)
+ static inline unsigned long __my_cpu_offset(void)
 {
 	unsigned long off;
 
@@ -38,14 +38,41 @@ static inline unsigned long __my_cpu_offset(void)
 	 * We want to allow caching the value, so avoid using volatile and
 	 * instead use a fake stack read to hazard against barrier().
 	 */
-	asm(ALTERNATIVE("mrs %0, tpidr_el1",
-			"mrs %0, tpidr_el2",
-			ARM64_HAS_VIRT_HOST_EXTN)
+	asm(ALTERNATIVE("mrs %0, tpidr_el1", //oldinstr: 부트업 cpu 또는 조건을 만족시키지 못할 때 수행할 1개의 assembly 명령어
+			"mrs %0, tpidr_el2",         //newinstr: secondary cpu 들에서 조건을 만족시킬 때 대치될 1개의 assembly 명령어
+			ARM64_HAS_VIRT_HOST_EXTN)   //feature: cpu 아키텍처가 지원하는 기능(capabilities) ARM64_HAS_VIRT_HOST_EXTN = 11 0b1011
 		: "=r" (off) :
 		"Q" (*(const unsigned long *)current_stack_pointer));
 
 	return off;
 }
+/*  ./arch/arm64/include/asm/percpu.h:
+	45     "Q" (*(const unsigned long *)current_stack_pointer));
+	0xffff000011110290 <+24>:	mov	x0, sp     //현재 stack pointer 값을 x0에 옮긴다.
+
+	41		asm(ALTERNATIVE("mrs %0, tpidr_el1",
+	--Type <RET> for more, q to quit, c to continue without paging--c
+	0xffff000011110294 <+28>:	mrs	x0, tpidr_el1   // tpidr_el1의 값을 x0에 옮긴다.(특수 레지스터는 mrs 명령어를 통해 이동)
+	0xffff000011110298 <+32>:	str	x0, [x29, #120] // tpidr_el1 값을 x29+#120 주소에 store 해준다.
+	0xffff00001111029c <+36>:	ldr	x1, [x29, #120] // tpidr_el1 값을 x1에 적는다.
+
+	아래 gdb display 값은 마지막 <+36> 명령어 까지 실행 후 값이다.
+	(gdb)
+	1: $pc = (void (*)()) 0xffff0000111102a0 <boot_cpu_init+40>
+	3: /x $x0 = 0x0
+	5: $sp = (void *) 0xffff000011263f00
+	6: /x $x29 = 0xffff000011263f00
+	7: /x $x1 = 0x0
+	8: $tpidr_el1 = void
+ 
+
+*/
+
+
+
+
+
+
 #define __my_cpu_offset __my_cpu_offset()
 
 #define PERCPU_RW_OPS(sz)						\

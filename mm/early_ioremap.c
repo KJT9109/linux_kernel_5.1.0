@@ -78,9 +78,10 @@ __attribute__((optimize("-O0"))) void __init early_ioremap_setup(void)
 	u64 dbg_x1,dbg_x2,dbg_x3;
 
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)        // FIX_BITMAPS_SLOTS = 7 (0~6)
+	{
 		if (WARN_ON(prev_map[i]))                 // prev_map[0~6]에 데이터가 있는 경우 경고 출력
 			break;
-
+	}
 
 		dbg_x1 = FIX_BTMAP_BEGIN;                 // 0x5c6
 		dbg_x1 = FIX_BTMAP_END;                   // 0x407

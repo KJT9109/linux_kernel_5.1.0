@@ -54,7 +54,7 @@ static inline void arch_local_irq_enable(void)
 static inline void arch_local_irq_disable(void)
 {
 	asm volatile(ALTERNATIVE(
-		"msr	daifset, #2		// arch_local_irq_disable",
+		"msr	daifset, #2		// arch_local_irq_disable", //processor state 에서  DAIF 중 I를 1로 setting 하여 irq_disable 함
 		"msr_s  " __stringify(SYS_ICC_PMR_EL1) ", %0",
 		ARM64_HAS_IRQ_PRIO_MASKING)
 		:

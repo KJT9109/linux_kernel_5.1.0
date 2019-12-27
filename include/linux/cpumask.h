@@ -809,7 +809,7 @@ set_cpu_present(unsigned int cpu, bool present)
 static inline void
 set_cpu_online(unsigned int cpu, bool online)
 {
-	if (online)
+	if (online)  //cpu = 0, online = true
 		cpumask_set_cpu(cpu, &__cpu_online_mask);
 	else
 		cpumask_clear_cpu(cpu, &__cpu_online_mask);

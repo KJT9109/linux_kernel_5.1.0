@@ -471,7 +471,7 @@ done:
 	return;
 }
 
-void __init page_address_init(void)
+__attribute__((optimize("-O0"))) void __init page_address_init(void)
 {
 	int i;
 

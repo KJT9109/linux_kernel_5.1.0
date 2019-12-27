@@ -2279,9 +2279,9 @@ void init_cpu_online(const struct cpumask *src)
 /*
  * Activate the first processor.
  */
-void __init boot_cpu_init(void)
+__attribute__((optimize("-O0"))) void __init boot_cpu_init(void)
 {
-	int cpu = smp_processor_id();
+	int cpu = smp_processor_id();  //cpu = 0
 
 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
 	set_cpu_online(cpu, true);

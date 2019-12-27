@@ -5387,7 +5387,7 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
  * Initialize cgroups at system boot, and initialize any
  * subsystems that request early init.
  */
-int __init cgroup_init_early(void)
+__attribute__((optimize("-O0"))) int __init cgroup_init_early(void)
 {
 	static struct cgroup_fs_context __initdata ctx;
 	struct cgroup_subsys *ss;

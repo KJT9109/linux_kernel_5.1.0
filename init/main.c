@@ -563,6 +563,14 @@ asmlinkage __visible void __init start_kernel(void)
 	boot_cpu_init();
 	page_address_init();
 	pr_notice("%s", linux_banner);
+	
+	/* linux_banner
+	 * Linux version 5.1.0-gefef6ceac-dirty (root@linuz-VirtualBox) 
+	 * (gcc version 7.4.1 20181213 [linaro-7.4-2019.02 revision 
+	 * 56ec6f6b99cc167ff0c2f8e1a2eed33b1edc85d4] (Linaro GCC 7.4-2019.02))
+	 */
+
+
 	setup_arch(&command_line);
 	/*
 	 * Set up the the initial canary and entropy after arch

@@ -93,10 +93,20 @@ static struct resource mem_res[] = {
  */
 u64 __cacheline_aligned boot_args[4];
 
-void __init smp_setup_processor_id(void)
-{
-	u64 mpidr = read_cpuid_mpidr() & MPIDR_HWID_BITMASK;
+__attribute__((optimize("-O0"))) void __init smp_setup_processor_id(void)
+{	
+	u64 dbg_x1, mpidr;
+
+	mpidr = read_cpuid_mpidr() & MPIDR_HWID_BITMASK;   //0
+	dbg_x1 = read_cpuid_mpidr(); 		//  0x80000000
+	dbg_x1 = MPIDR_HWID_BITMASK;		//0xff00ffffff
+
 	cpu_logical_map(0) = mpidr;
+
+	/* read_cpuid_mpdir 함수를 통해 MPIDR_EL1 값을 읽어 온다.
+	 * Reserved 영역을 제외한 레지스터 값을 읽어온다.
+	 *    
+	 */ 
 
 	/*
 	 * clear __my_cpu_offset on boot CPU to avoid hang caused by
@@ -104,8 +114,34 @@ void __init smp_setup_processor_id(void)
 	 * access percpu variable inside lock_release
 	 */
 	set_my_cpu_offset(0);
+	
+	/*
+	  set_my_cpu_offset(0)은 asm language로 되어 있으며 tpidr_el1에 0으로 값을 써준다.(msr 명령어)
+	  
+		104		    cpu_logical_map(0) = mpidr;
+			
+			0xffff000011102d68 <+64>:	adrp	x0, 0xffff000011278000 <init_sighand+1408>
+			0xffff000011102d6c <+68>:	add	x0, x0, #0x790
+			0xffff000011102d70 <+72>:	ldr	x1, [x29, #16]
+			0xffff000011102d74 <+76>:	str	x1, [x0]
+			0xffff000011102d78 <+80>:	str	xzr, [x29, #40]
+
+		105			set_my_cpu_offset(0);	
+					asm volatile(ALTERNATIVE("msr tpidr_el1, %0",
+
+			./arch/arm64/include/asm/percpu.h:
+			0xffff000011102d7c <+84>:	ldr	x0, [x29, #40]
+			0xffff000011102d80 <+88>:	msr	tpidr_el1, x0
+			0xffff000011102d84 <+92>:	mrs	x0, midr_el1
+
+	*/
+
 	pr_info("Booting Linux on physical CPU 0x%010lx [0x%08x]\n",
 		(unsigned long)mpidr, read_cpuid_id());
+
+	/*                       QEMU log 
+	 *  Booting Linux on physical CPU 0x0000000000 [0x410fd034]
+	 */
 }
 
 bool arch_match_cpu_phys_id(int cpu, u64 phys_id)

@@ -824,12 +824,24 @@ int __weak arch_dup_task_struct(struct task_struct *dst,
 	return 0;
 }
 
-void set_task_stack_end_magic(struct task_struct *tsk)
+__attribute__((optimize("-O0"))) void set_task_stack_end_magic(struct task_struct *tsk)   // tsk=0xffff000011276cc0 <init_task>
 {
 	unsigned long *stackend;
 
-	stackend = end_of_stack(tsk);
+	stackend = end_of_stack(tsk);    
+	/*
+	 *     end_of_stack에서 tsk 구조체(thread_info)에 저장된 stack을 가지고 와 return한다.
+	 *     (gdb)p *tsk
+	 *     (gdb)p  tsk->stack 으로 확인 가능
+	 * 
+	 */
 	*stackend = STACK_END_MAGIC;	/* for overflow detection */
+    /* 
+	 * stack overflow check 용으로 *stackend에 0x57ac6e9d를 저장한다.
+	 * 
+	 * 
+	 */ 
+
 }
 
 static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
